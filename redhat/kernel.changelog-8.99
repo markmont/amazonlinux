@@ -1,3 +1,6 @@
+* Tue Jan 05 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc2.20210105git36bbbd0e234d.116]
+- Turn off vdso_install for ppc ("Justin M. Forbes")
+
 * Tue Jan 05 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc2.20210105git36bbbd0e234d.115]
 - Revert "Merge branch 'ark-enable-structleak' into 'os-build'" (Justin Forbes)
 - CONFIG_KASAN_HW_TAGS for aarch64 ("Justin M. Forbes")

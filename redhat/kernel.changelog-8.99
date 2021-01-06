@@ -1,3 +1,8 @@
+* Wed Jan 06 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc2.20210106git36bbbd0e234d.117]
+- Add gcc-c++ to BuildRequires ("Justin M. Forbes")
+- irq: export irq_check_status_bit (Levi Yun)
+- Turn off vdso_install for ppc ("Justin M. Forbes")
+
 * Wed Jan 06 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc2.20210106git36bbbd0e234d.116]
 - Update CONFIG_KASAN_HW_TAGS ("Justin M. Forbes")
 - gcc-plugins: fix gcc 11 indigestion with plugins... (=?UTF-8?q?Valdis=20Kl=C4=93tnieks?=)

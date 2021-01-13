@@ -1,3 +1,7 @@
+* Wed Jan 13 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc3.20210113gite609571b5ffa.124]
+- irq: export irq_check_status_bit (Levi Yun)
+- Turn off vdso_install for ppc ("Justin M. Forbes")
+
 * Wed Jan 13 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc3.20210113gite609571b5ffa.123]
 - fedora: only enable ACPI_CONFIGFS, ACPI_CUSTOM_METHOD in debug kernels (Peter Robinson)
 - fedora: User the same EFI_CUSTOM_SSDT_OVERLAYS as ARK (Peter Robinson)

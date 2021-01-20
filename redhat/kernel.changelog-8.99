@@ -1,3 +1,9 @@
+* Wed Jan 20 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc4.20210120git45dfb8a5659a.131]
+- redhat: replace inline awk script with genlog.py call (Herton R. Krzesinski)
+- redhat: add genlog.py script (Herton R. Krzesinski)
+- irq: export irq_check_status_bit (Levi Yun)
+- Turn off vdso_install for ppc (Justin M. Forbes)
+
 * Tue Jan 19 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc4.20210119git1e2a199f6ccd.129]
 - all: s390x: Increase CONFIG_PCI_NR_FUNCTIONS to 512 (#1888735) (=?UTF-8?q?Dan=20Hor=C3=A1k?=)
 

@@ -1,3 +1,9 @@
+* Fri Jan 22 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc4.20210122git83d09ad4b950.133]
+- redhat: replace inline awk script with genlog.py call (Herton R. Krzesinski)
+- redhat: add genlog.py script (Herton R. Krzesinski)
+- irq: export irq_check_status_bit (Levi Yun)
+- Turn off vdso_install for ppc (Justin M. Forbes)
+
 * Thu Jan 21 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc4.20210121git9791581c049c.131]
 - Fix USB_XHCI_PCI regression ("Justin M. Forbes")
 - fedora: fixes for ARMv7 build issue by disabling HIGHPTE (Peter Robinson)

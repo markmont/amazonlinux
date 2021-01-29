@@ -1,3 +1,8 @@
+* Fri Jan 29 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc5.20210129gitbec4c2968fce.138]
+- redhat: replace inline awk script with genlog.py call (Herton R. Krzesinski)
+- redhat: add genlog.py script (Herton R. Krzesinski)
+- Turn off vdso_install for ppc (Justin M. Forbes)
+
 * Fri Jan 29 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc5.20210129gitbec4c2968fce.137]
 - Turn off CONFIG_VIRTIO_CONSOLE for s390x zfcpdump ("Justin M. Forbes")
 

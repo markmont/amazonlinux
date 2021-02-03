@@ -1,3 +1,6 @@
+* Wed Feb 03 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc6.20210203git3aaf0a27ffc2.143]
+- Bluetooth: L2CAP: Try harder to accept device not knowing options (Bastien Nocera)
+
 * Wed Feb 03 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc6.20210203git3aaf0a27ffc2.142]
 - redhat: replace inline awk script with genlog.py call (Herton R. Krzesinski)
 - redhat: add genlog.py script (Herton R. Krzesinski)

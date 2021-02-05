@@ -1,3 +1,6 @@
+* Fri Feb 05 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc6.20210205gitdd86e7fa07a3.145]
+- Bluetooth: L2CAP: Try harder to accept device not knowing options (Bastien Nocera)
+
 * Fri Feb 05 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc6.20210205gitdd86e7fa07a3.144]
 - Turn off additional KASAN options for Fedora (Justin M. Forbes)
 - Rename the master branch to rawhide for Fedora (Justin M. Forbes)

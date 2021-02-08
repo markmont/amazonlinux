@@ -1,3 +1,6 @@
+* Mon Feb 08 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc7.149]
+- Bluetooth: L2CAP: Try harder to accept device not knowing options (Bastien Nocera)
+
 * Mon Feb 08 2021 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.11.0-0.rc7.148]
 - redhat: add DUP and kpatch certificates to system trusted keys for RHEL build (Herton R. Krzesinski)
 

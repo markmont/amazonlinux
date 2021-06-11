@@ -2129,6 +2129,9 @@ static void bbr_init(struct sock *sk)
 	bbr->alpha_last_delivered_ce = 0;
 
 	tp->fast_ack_mode = bbr_fast_ack_mode ? 1 : 0;
+
+	if (bbr_can_use_ecn(sk))
+		tp->ecn_flags |= TCP_ECN_ECT_PERMANENT;
 }
 
 /* BBR marks the current round trip as a loss round. */

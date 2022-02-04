@@ -322,8 +322,7 @@ static int emit_jump(u8 **pprog, void *func, void *ip)
 }
 
 static int __bpf_arch_text_poke(void *ip, enum bpf_text_poke_type t,
-				void *old_addr, void *new_addr,
-				const bool text_live)
+				void *old_addr, void *new_addr)
 {
 	const u8 *nop_insn = ideal_nops[NOP_ATOMIC5];
 	u8 old_insn[X86_PATCH_SIZE];
@@ -357,10 +356,7 @@ static int __bpf_arch_text_poke(void *ip, enum bpf_text_poke_type t,
 		goto out;
 	ret = 1;
 	if (memcmp(ip, new_insn, X86_PATCH_SIZE)) {
-		if (text_live)
-			text_poke_bp(ip, new_insn, X86_PATCH_SIZE, NULL);
-		else
-			memcpy(ip, new_insn, X86_PATCH_SIZE);
+		text_poke_bp(ip, new_insn, X86_PATCH_SIZE, NULL);
 		ret = 0;
 	}
 out:
@@ -376,7 +372,7 @@ int bpf_arch_text_poke(void *ip, enum bpf_text_poke_type t,
 		/* BPF poking in modules is not supported */
 		return -EINVAL;
 
-	return __bpf_arch_text_poke(ip, t, old_addr, new_addr, true);
+	return __bpf_arch_text_poke(ip, t, old_addr, new_addr);
 }
 
 #define EMIT_LFENCE()	EMIT3(0x0F, 0xAE, 0xE8)
@@ -567,24 +563,15 @@ static void bpf_tail_call_direct_fixup(struct bpf_prog *prog)
 		mutex_lock(&array->aux->poke_mutex);
 		target = array->ptrs[poke->tail_call.key];
 		if (target) {
-			/* Plain memcpy is used when image is not live yet
-			 * and still not locked as read-only. Once poke
-			 * location is active (poke->tailcall_target_stable),
-			 * any parallel bpf_arch_text_poke() might occur
-			 * still on the read-write image until we finally
-			 * locked it as read-only. Both modifications on
-			 * the given image are under text_mutex to avoid
-			 * interference.
-			 */
 			ret = __bpf_arch_text_poke(poke->tailcall_target,
 						   BPF_MOD_JUMP, NULL,
 						   (u8 *)target->bpf_func +
-						   poke->adj_off, false);
+						   poke->adj_off);
 			BUG_ON(ret < 0);
 			ret = __bpf_arch_text_poke(poke->tailcall_bypass,
 						   BPF_MOD_JUMP,
 						   (u8 *)poke->tailcall_target +
-						   X86_PATCH_SIZE, NULL, false);
+						   X86_PATCH_SIZE, NULL);
 			BUG_ON(ret < 0);
 		}
 		WRITE_ONCE(poke->tailcall_target_stable, true);
@@ -783,7 +770,7 @@ static void detect_reg_usage(struct bpf_insn *insn, int insn_cnt,
 	}
 }
 
-static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
+static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image, u8 *rw_image,
 		  int oldproglen, struct jit_context *ctx)
 {
 	bool tail_call_reachable = bpf_prog->aux->tail_call_reachable;
@@ -1205,6 +1192,9 @@ st:			if (is_imm8(insn->off))
 					pr_err("extable->insn doesn't fit into 32-bit\n");
 					return -EFAULT;
 				}
+				/* switch ex to rw buffer for writes */
+				ex = (void *)rw_image + ((void *)ex - (void *)image);
+
 				ex->insn = delta;
 
 				delta = (u8 *)ex_handler_bpf - (u8 *)&ex->handler;
@@ -1493,7 +1483,7 @@ emit_jmp:
 				pr_err("bpf_jit: fatal error\n");
 				return -EFAULT;
 			}
-			memcpy(image + proglen, temp, ilen);
+			memcpy(rw_image + proglen, temp, ilen);
 		}
 		proglen += ilen;
 		addrs[i] = proglen;
@@ -2002,6 +1992,7 @@ int arch_prepare_bpf_dispatcher(void *image, s64 *funcs, int num_funcs)
 }
 
 struct x64_jit_data {
+	struct bpf_binary_header *rw_header;
 	struct bpf_binary_header *header;
 	int *addrs;
 	u8 *image;
@@ -2011,6 +2002,7 @@ struct x64_jit_data {
 
 struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 {
+	struct bpf_binary_header *rw_header = NULL;
 	struct bpf_binary_header *header = NULL;
 	struct bpf_prog *tmp, *orig_prog = prog;
 	struct x64_jit_data *jit_data;
@@ -2018,6 +2010,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 	struct jit_context ctx = {};
 	bool tmp_blinded = false;
 	bool extra_pass = false;
+	u8 *rw_image = NULL;
 	u8 *image = NULL;
 	int *addrs;
 	int pass;
@@ -2053,6 +2046,8 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 		oldproglen = jit_data->proglen;
 		image = jit_data->image;
 		header = jit_data->header;
+		rw_header = jit_data->rw_header;
+		rw_image = (void *)rw_header + ((void *)image - (void *)header);
 		extra_pass = true;
 		goto skip_init_addrs;
 	}
@@ -2080,12 +2075,12 @@ skip_init_addrs:
 	 * pass to emit the final image.
 	 */
 	for (pass = 0; pass < 20 || image; pass++) {
-		proglen = do_jit(prog, addrs, image, oldproglen, &ctx);
+		proglen = do_jit(prog, addrs, image, rw_image, oldproglen, &ctx);
 		if (proglen <= 0) {
 out_image:
 			image = NULL;
 			if (header)
-				bpf_jit_binary_free(header);
+				bpf_jit_binary_pack_free(header, rw_header);
 			prog = orig_prog;
 			goto out_addrs;
 		}
@@ -2109,8 +2104,9 @@ out_image:
 				sizeof(struct exception_table_entry);
 
 			/* allocate module memory for x86 insns and extable */
-			header = bpf_jit_binary_alloc(roundup(proglen, align) + extable_size,
-						      &image, align, jit_fill_hole);
+			header = bpf_jit_binary_pack_alloc(roundup(proglen, align) + extable_size,
+							   &image, align, &rw_header, &rw_image,
+							   jit_fill_hole);
 			if (!header) {
 				prog = orig_prog;
 				goto out_addrs;
@@ -2126,14 +2122,22 @@ out_image:
 
 	if (image) {
 		if (!prog->is_func || extra_pass) {
+			/*
+			 * bpf_jit_binary_pack_finalize fails in two scenarios:
+			 *   1) header is not pointing to proper module memory;
+			 *   2) the arch doesn't support bpf_arch_text_copy().
+			 *
+			 * Both cases are serious bugs that we should not continue.
+			 */
+			BUG_ON(bpf_jit_binary_pack_finalize(prog, header, rw_header));
 			bpf_tail_call_direct_fixup(prog);
-			bpf_jit_binary_lock_ro(header);
 		} else {
 			jit_data->addrs = addrs;
 			jit_data->ctx = ctx;
 			jit_data->proglen = proglen;
 			jit_data->image = image;
 			jit_data->header = header;
+			jit_data->rw_header = rw_header;
 		}
 		prog->bpf_func = (void *)image;
 		prog->jited = 1;

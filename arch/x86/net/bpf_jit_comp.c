@@ -2156,3 +2156,10 @@ out:
 					   tmp : orig_prog);
 	return prog;
 }
+
+void *bpf_arch_text_copy(void *dst, void *src, size_t len)
+{
+	if (text_poke_copy(dst, src, len) == NULL)
+		return ERR_PTR(-EINVAL);
+	return dst;
+}

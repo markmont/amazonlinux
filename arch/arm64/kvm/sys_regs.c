@@ -40,6 +40,7 @@
  */
 
 static int set_id_reg(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd, u64 val);
+static u64 kvm_arm_update_id_reg(const struct kvm_vcpu *vcpu, u32 id, u64 val);
 static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding);
 static u64 sys_reg_to_index(const struct sys_reg_desc *reg);
 
@@ -1146,6 +1147,7 @@ static int arm64_check_features(struct kvm_vcpu *vcpu,
 	/* For hidden and unallocated idregs without reset, only val = 0 is allowed. */
 	if (rd->reset) {
 		limit = rd->reset(vcpu, rd);
+		limit = kvm_arm_update_id_reg(vcpu, id, limit);
 		ftr_reg = get_arm64_ftr_reg(id);
 		if (!ftr_reg)
 			return -EINVAL;
@@ -1252,10 +1254,8 @@ static u64 general_read_kvm_sanitised_reg(struct kvm_vcpu *vcpu, const struct sy
 	return read_sanitised_ftr_reg(reg_to_encoding(rd));
 }
 
-static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
+static u64 kvm_arm_update_id_reg(const struct kvm_vcpu *vcpu, u32 encoding, u64 val)
 {
-	u64 val = IDREG(vcpu->kvm, encoding);
-
 	switch (encoding) {
 	case SYS_ID_AA64PFR0_EL1:
 		if (!vcpu_has_sve(vcpu))
@@ -1299,6 +1299,13 @@ static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
 	}
 
 	return val;
+}
+
+static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
+{
+	u64 val = IDREG(vcpu->kvm, encoding);
+
+	return kvm_arm_update_id_reg(vcpu, encoding, val);
 }
 
 /* Read a sanitised cpufeature ID register by sys_reg_desc */

@@ -771,6 +771,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
 KBUILD_CFLAGS += -O2
+ifdef CONFIG_ARM64
+KBUILD_CFLAGS += --param=early-inlining-insns=14 --param=inline-heuristics-hint-percent=600 \
+		 --param=inline-min-speedup=15 --param=max-inline-insns-auto=30 \
+		 --param=max-inline-insns-single=200
+endif
 else ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3
 KBUILD_CFLAGS += -O3
 else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE

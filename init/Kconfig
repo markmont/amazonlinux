@@ -1387,6 +1387,15 @@ config CC_OPTIMIZE_FOR_SIZE
 
 endchoice
 
+config CC_ENABLE_ADVANCED_INLINING
+	bool "Enable GCC inlining parameters"
+	default n
+	depends on CC_OPTIMIZE_FOR_PERFORMANCE
+	help
+	  Choosing this option will pass the following parameters to the
+	  compiler early-inlining-insns=14 inline-heuristics-hint-percent=600
+	  inline-min-speedup=15 max-inline-insns-auto=30 max-inline-insns-single=200
+
 config HAVE_LD_DEAD_CODE_DATA_ELIMINATION
 	bool
 	help

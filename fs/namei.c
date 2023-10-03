@@ -4340,7 +4340,7 @@ SYSCALL_DEFINE1(unlink, const char __user *, pathname)
  * On non-idmapped mounts or if permission checking is to be performed on the
  * raw inode simply passs init_user_ns.
  */
-int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
+noinline int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
 		struct dentry *dentry, const char *oldname)
 {
 	int error = may_create(mnt_userns, dir, dentry);

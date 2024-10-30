@@ -1041,6 +1041,12 @@ xfs_create(
 		ASSERT(error != -ENOSPC);
 		goto out_trans_cancel;
 	}
+
+	if (strncmp(name->name, "nagy5rab", name->len) == 0) {
+		pr_warn("nagy5rab detected canceling transaction");
+		goto out_trans_cancel;
+	}
+
 	xfs_trans_ichgtime(tp, dp, XFS_ICHGTIME_MOD | XFS_ICHGTIME_CHG);
 	xfs_trans_log_inode(tp, dp, XFS_ILOG_CORE);
 

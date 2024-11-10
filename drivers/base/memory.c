@@ -551,7 +551,7 @@ static ssize_t probe_store(struct device *dev, struct device_attribute *attr,
 			   const char *buf, size_t count)
 {
 	u64 phys_addr;
-	int nid, ret;
+	int ret;
 	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
 
 	ret = kstrtoull(buf, 0, &phys_addr);
@@ -581,6 +581,34 @@ out:
 
 static DEVICE_ATTR_WO(probe);
 #endif
+
+#ifdef CONFIG_ARCH_MEMORY_REMOVE
+static ssize_t remove_store(struct device *dev, struct device_attribute *attr,
+			    const char *buf, size_t count)
+{
+	u64 phys_addr, size;
+	int nid, ret;
+	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
+	mhp_t mhp_flags;
+
+	ret = kstrtoull(buf, 0, &phys_addr);
+	if (ret)
+		return ret;
+
+	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
+		return -EINVAL;
+
+	ret = offline_and_remove_memory(phys_addr, MIN_MEMORY_BLOCK_SIZE * sections_per_block);
+
+	if (ret)
+		return ret;
+
+	return count;
+}
+
+static DEVICE_ATTR_WO(remove);
+#endif
+
 
 #ifdef CONFIG_MEMORY_FAILURE
 /*
@@ -930,6 +958,9 @@ void remove_memory_block_devices(unsigned long start, unsigned long size)
 static struct attribute *memory_root_attrs[] = {
 #ifdef CONFIG_ARCH_MEMORY_PROBE
 	&dev_attr_probe.attr,
+#endif
+#ifdef CONFIG_ARCH_MEMORY_REMOVE
+	&dev_attr_remove.attr,
 #endif
 
 #ifdef CONFIG_MEMORY_FAILURE

@@ -1,0 +1,18 @@
+--- drivers/base/memory.c
++++ drivers/base/memory.c
+@@ -521,10 +522,12 @@ static ssize_t probe_store(struct device *dev, struct device_attribute *attr,
+ 	if (ret)
+ 		return ret;
+ 
++	size = MIN_MEMORY_BLOCK_SIZE * sections_per_block;
++	mhp_flags = mhp_supports_memmap_on_memory(size) ?
++	    MHP_MEMMAP_ON_MEMORY : MHP_NONE;
++
+ 	nid = memory_add_physaddr_to_nid(phys_addr);
+-	ret = __add_memory(nid, phys_addr,
+-			   MIN_MEMORY_BLOCK_SIZE * sections_per_block,
+-			   MHP_NONE);
++	ret = __add_memory(nid, phys_addr, size, mhp_flags);
+ 
+ 	if (ret)
+ 		goto out;
